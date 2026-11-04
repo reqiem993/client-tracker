@@ -1,8 +1,16 @@
 // Этапы работы над проектом
 const STAGES = ["Бриф", "Дизайн", "Правки", "Сдача"];
 
-// Достаём сохранённые проекты из браузера (или пустой список, если их ещё нет)
-let projects = JSON.parse(localStorage.getItem("projects")) || [];
+// Объект Telegram. Если страница открыта в обычном браузере, initData пустой
+const tg = window.Telegram && window.Telegram.WebApp;
+const cloud = tg && tg.initData && tg.isVersionAtLeast("6.9") ? tg.CloudStorage : null;
+if (tg) {
+  tg.ready();   // сообщаем Telegram, что страница загрузилась
+  tg.expand();  // раскрываем на весь экран
+}
+
+let projects = [];
+let saved = {}; // что уже лежит в облаке Telegram: ключ -> текст проекта
 
 const list = document.getElementById("list");
 const form = document.getElementById("form");
@@ -13,8 +21,28 @@ const earned = document.getElementById("earned");
 const today = new Date().toLocaleDateString("sv-SE");
 monthInput.value = today.slice(0, 7);
 
+// Загрузка: в Telegram берём из облака (один проект = один ключ), иначе из браузера
+async function load() {
+  if (!cloud) return JSON.parse(localStorage.getItem("projects")) || [];
+  const keys = await new Promise(r => cloud.getKeys((e, k) => r(k || [])));
+  const pk = keys.filter(k => k.startsWith("p_"));
+  if (!pk.length) return [];
+  const vals = await new Promise(r => cloud.getItems(pk, (e, v) => r(v || {})));
+  saved = vals;
+  return pk.map(k => JSON.parse(vals[k])).sort((a, b) => b.id - a.id);
+}
+
+// Сохранение: в облако отправляем только то, что изменилось
 function save() {
-  localStorage.setItem("projects", JSON.stringify(projects));
+  if (!cloud) {
+    localStorage.setItem("projects", JSON.stringify(projects));
+    return;
+  }
+  const now = {};
+  for (const p of projects) now["p_" + p.id] = JSON.stringify(p);
+  for (const k in now) if (saved[k] !== now[k]) cloud.setItem(k, now[k]);
+  for (const k in saved) if (!(k in now)) cloud.removeItem(k);
+  saved = now;
 }
 
 // Защита: пользовательский текст не должен превращаться в HTML-код
@@ -97,4 +125,7 @@ list.addEventListener("change", e => {
 // Смена месяца пересчитывает сумму
 monthInput.addEventListener("change", render);
 
-render();
+load().then(list => {
+  projects = list;
+  render();
+});
