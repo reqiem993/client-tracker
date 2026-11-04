@@ -8,6 +8,8 @@
   --line: #D5DBE3;
 }
 * { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+html, body { max-width: 100%; overflow-x: hidden; }
 body {
   margin: 0;
   background: var(--bg);
@@ -77,4 +79,20 @@ li button[data-act="del"] { background: transparent; color: var(--muted); }
   .earned { text-align: left; }
   .sum { font-size: 2.4rem; }
   #form { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* iPhone рисует поля даты по-своему и игнорирует ширину, пока не сбросить вид */
+input[type="date"], input[type="month"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-height: 44px;
+}
+#form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: .85rem;
+  color: var(--muted);
 }
