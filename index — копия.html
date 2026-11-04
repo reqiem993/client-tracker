@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Мои проекты</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Мои проекты</h1>
+      <div class="earned">
+        <input type="month" id="month" aria-label="Месяц">
+        <p class="sum"><span id="earned">0</span> ₽</p>
+        <p class="hint">заработано за выбранный месяц</p>
+      </div>
+    </header>
+
+    <form id="form">
+      <input name="client" placeholder="Клиент" aria-label="Клиент" required>
+      <input name="work" placeholder="Что делаем" aria-label="Что делаем" required>
+      <input name="amount" type="number" min="0" placeholder="Сумма, ₽" aria-label="Сумма" required>
+      <input name="deadline" type="date" aria-label="Дедлайн">
+      <button>Добавить проект</button>
+    </form>
+
+    <ul id="list"></ul>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
